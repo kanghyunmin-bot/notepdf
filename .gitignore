@@ -1,0 +1,13 @@
+.DS_Store
+/build/
+/dist/
+/engine/target/
+__pycache__/
+*.pyc
+*.jks
+*.keystore
+*.password
+*.p12
+*.pfx
+.env
+*.sdocx

@@ -1,0 +1,10 @@
+[workspace]
+members = ["sdocx", "sdocx2pdf"]
+resolver = "3"
+
+[profile.release]
+strip = true
+lto = "thin"
+
+[workspace.package]
+license = "MIT"

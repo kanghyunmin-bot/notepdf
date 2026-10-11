@@ -1,0 +1,34 @@
+name: Source checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  mac-core:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and test conversion safety
+        run: |
+          swiftc -swift-version 5 -framework AppKit -framework PDFKit Sources/Conversion.swift tests/main.swift -o /tmp/notepdf-core-tests
+          /tmp/notepdf-core-tests
+      - name: Check Python scripts
+        run: python3 -m compileall -q scripts
+  android-java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Prepare SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Compile Android sources
+        run: |
+          mkdir -p build/res/drawable build/gen build/classes
+          cp -R android/res/values build/res/
+          cp Assets/Logo.png build/res/drawable/app_icon.png
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" compile --dir build/res -o build/resources.zip
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" link -I "$ANDROID_HOME/platforms/android-35/android.jar" --manifest android/AndroidManifest.xml --java build/gen build/resources.zip -o build/resources.apk
+          javac -source 8 -target 8 -encoding UTF-8 -cp "$ANDROID_HOME/platforms/android-35/android.jar" -d build/classes $(find android/src build/gen -name '*.java')
